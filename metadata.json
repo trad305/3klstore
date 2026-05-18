@@ -1,0 +1,8 @@
+{
+  "name": "Remix: حروف مع 3KL",
+  "description": "لعبة تنافسية للحروف الأبجدية بين فريقين، تتميز بنظام جولات، إعدادات مخصصة، وتصميم عصري جذاب لمتجر 3KL.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
