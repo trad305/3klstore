@@ -948,7 +948,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen font-sans text-white dir-rtl overflow-hidden relative flex flex-col lg:flex-row" dir="rtl" style={{ backgroundColor: teamColorRed }}>
+    <div className="min-h-screen font-sans text-white dir-rtl overflow-hidden relative flex flex-row" dir="rtl" style={{ backgroundColor: teamColorRed }}>
       
       <AnimatePresence>
         {isPortrait && gameState === 'playing' && (
@@ -1077,7 +1077,7 @@ export default function App() {
         </div>
 
         <div 
-          className="relative flex items-center justify-center scale-[0.45] sm:scale-[0.6] md:scale-[0.75] lg:scale-[0.85] xl:scale-90 transition-all duration-500 hover:scale-[0.87] lg:hover:scale-[0.92] z-10" 
+          className="relative flex items-center justify-center scale-[0.35] sm:scale-[0.5] md:scale-[0.65] lg:scale-[0.85] xl:scale-90 transition-all duration-500 hover:scale-[0.37] sm:hover:scale-[0.52] lg:hover:scale-[0.92] z-10" 
           style={{ 
             width: '650px', 
             height: '500px', 
@@ -1086,13 +1086,13 @@ export default function App() {
         >
           {/* Edge Indicators for connectivity directions */}
           {/* Top Edge (Green) */}
-          <div className="absolute top-[-40px] left-[50px] right-[50px] h-3 rounded-full opacity-60 blur-[2px] transition-colors duration-500" style={{ backgroundColor: teamColorGreen }} />
+          <div className="absolute top-[-30px] left-[50px] right-[50px] h-3 rounded-full opacity-60 blur-[2px] transition-colors duration-500" style={{ backgroundColor: teamColorGreen }} />
           {/* Bottom Edge (Green) */}
-          <div className="absolute bottom-[-40px] left-[50px] right-[50px] h-3 rounded-full opacity-60 blur-[2px] transition-colors duration-500" style={{ backgroundColor: teamColorGreen }} />
+          <div className="absolute bottom-[-30px] left-[50px] right-[50px] h-3 rounded-full opacity-60 blur-[2px] transition-colors duration-500" style={{ backgroundColor: teamColorGreen }} />
           {/* Left Edge (Red) */}
-          <div className="absolute left-[-40px] top-[50px] bottom-[50px] w-3 rounded-full opacity-60 blur-[2px] transition-colors duration-500" style={{ backgroundColor: teamColorRed }} />
+          <div className="absolute left-[-30px] top-[50px] bottom-[50px] w-3 rounded-full opacity-60 blur-[2px] transition-colors duration-500" style={{ backgroundColor: teamColorRed }} />
           {/* Right Edge (Red) */}
-          <div className="absolute right-[-40px] top-[50px] bottom-[50px] w-3 rounded-full opacity-60 blur-[2px] transition-colors duration-500" style={{ backgroundColor: teamColorRed }} />
+          <div className="absolute right-[-30px] top-[50px] bottom-[50px] w-3 rounded-full opacity-60 blur-[2px] transition-colors duration-500" style={{ backgroundColor: teamColorRed }} />
 
           {HEX_GRID.map((hex, idx) => {
             const letter = alphabet[idx];
