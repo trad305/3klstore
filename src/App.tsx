@@ -42,18 +42,24 @@ type OwnerState = 'red' | 'green' | 'transparent' | null;
 type GameState = 'menu' | 'playing';
 
 const THEME_OPTIONS = [
-  { name: 'كلاسيك', red: '#E11D48', green: '#10B981' },
-  { name: 'المحيط', red: '#2563EB', green: '#F59E0B' },
-  { name: 'النيون', red: '#F472B6', green: '#22D3EE' },
-  { name: 'الذهبي', red: '#8B5CF6', green: '#FACC15' },
-  { name: 'الليل', red: '#6366F1', green: '#F97316' },
-  { name: 'الغابة', red: '#059669', green: '#EF4444' },
-  { name: 'البرق', red: '#FBBF24', green: '#4F46E5' },
-  { name: 'الحلوى', red: '#FF7597', green: '#00D1B2' },
-  { name: 'الأناقة', red: '#2D3436', green: '#DFE6E9' },
-  { name: 'البحر', red: '#00CEC9', green: '#D63031' },
-  { name: 'الخريف', red: '#D35400', green: '#27AE60' },
-  { name: 'الفضاء', red: '#6C5CE7', green: '#FD79A8' },
+  { name: 'الافتراضي', red: '#FD7941', green: '#4CAF50', sidebar: '#6D3691' },
+  { name: 'كلاسيك', red: '#E11D48', green: '#10B981', sidebar: '#1e1e1e' },
+  { name: 'المحيط', red: '#2563EB', green: '#F59E0B', sidebar: '#1a365d' },
+  { name: 'النيون', red: '#F472B6', green: '#22D3EE', sidebar: '#2d1b4d' },
+  { name: 'الذهبي', red: '#8B5CF6', green: '#FACC15', sidebar: '#2d2d2d' },
+  { name: 'الفضاء', red: '#6366F1', green: '#F97316', sidebar: '#1e1b4b' },
+  { name: 'الغابة', red: '#059669', green: '#FF4D4D', sidebar: '#064e3b' },
+  { name: 'الرمال', red: '#D97706', green: '#059669', sidebar: '#451a03' },
+  { name: 'البحر', red: '#0891B2', green: '#DC2626', sidebar: '#083344' },
+  { name: 'الفجر', red: '#7C3AED', green: '#10B981', sidebar: '#2e1065' },
+  { name: 'الغروب', red: '#F97316', green: '#7C3AED', sidebar: '#2d1a30' },
+  { name: 'الثلج', red: '#0EA5E9', green: '#6366F1', sidebar: '#0c4a6e' },
+  { name: 'الكرز', red: '#BE123C', green: '#10B981', sidebar: '#4c0519' },
+  { name: 'العشب', red: '#65A30D', green: '#CA8A04', sidebar: '#14532d' },
+  { name: 'الجالاكسي', red: '#D946EF', green: '#2DD4BF', sidebar: '#2d1065' },
+  { name: 'طوكيو', red: '#FF0055', green: '#00FF99', sidebar: '#121212' },
+  { name: 'البنفسج', red: '#9b59b6', green: '#e67e22', sidebar: '#2c3e50' },
+  { name: 'الصبار', red: '#27ae60', green: '#f1c40f', sidebar: '#1a252f' },
 ];
 
 const QUESTION_BANK: Record<string, { q: string; a: string }[]> = {
@@ -551,15 +557,18 @@ export default function App() {
   const [questionSubIdx, setQuestionSubIdx] = useState(0);
   
   // Audio Helper
-  const playSound = (type: 'click' | 'roundWin' | 'gameWin') => {
+  const playSound = (type: 'click' | 'roundWin' | 'gameWin' | 'success' | 'tab' | 'theme') => {
     if (isMuted) return;
     const sounds = {
       click: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
+      success: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
+      tab: 'https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3',
+      theme: 'https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3',
       roundWin: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3',
       gameWin: 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'
     };
     const audio = new Audio(sounds[type]);
-    audio.volume = 0.5;
+    audio.volume = type === 'click' ? 0.3 : 0.5;
     audio.play().catch(() => {});
   };
   
@@ -567,14 +576,17 @@ export default function App() {
   const [gameTitle, setGameTitle] = useState('حروف مع 3kl');
   const [teamRedName, setTeamRedName] = useState('الفريق الأول');
   const [teamGreenName, setTeamGreenName] = useState('الفريق الثاني');
-  const [teamColorRed, setTeamColorRed] = useState('#E11D48'); 
-  const [teamColorGreen, setTeamColorGreen] = useState('#10B981'); 
+  const [teamColorRed, setTeamColorRed] = useState('#FD7941'); // Orange
+  const [teamColorGreen, setTeamColorGreen] = useState('#4CAF50'); // Green
+  const [sidebarColor, setSidebarColor] = useState('#6D3691'); // Purple
   const [alphabet, setAlphabet] = useState([...ARABIC_ALPHABET]);
 
   const selectTheme = (index: number) => {
+    playSound('theme');
     const theme = THEME_OPTIONS[index];
     setTeamColorRed(theme.red);
     setTeamColorGreen(theme.green);
+    if (theme.sidebar) setSidebarColor(theme.sidebar);
   };
 
   const shuffleAlphabet = () => {
@@ -605,9 +617,9 @@ export default function App() {
       const maxRow = GRID_LAYOUT.length - 1;
       const minRow = 0;
 
-      if (team === 'red') {
+      if (team === 'green') {
         HEX_GRID.forEach((h, idx) => {
-          if (h.r === minRow && owners[idx] === 'red') {
+          if (h.r === minRow && owners[idx] === 'green') {
             queue.push({ r: h.r, c: h.c });
             visited.add(`${h.r},${h.c}`);
           }
@@ -617,7 +629,7 @@ export default function App() {
           if (curr.r === maxRow) return true;
           getNeighbors(curr.r, curr.c).forEach(nb => {
             const hexIdx = HEX_GRID.findIndex(h => h.r === nb.r && h.c === nb.c);
-            if (hexIdx !== -1 && owners[hexIdx] === 'red' && !visited.has(`${nb.r},${nb.c}`)) {
+            if (hexIdx !== -1 && owners[hexIdx] === 'green' && !visited.has(`${nb.r},${nb.c}`)) {
               visited.add(`${nb.r},${nb.c}`);
               queue.push(nb);
             }
@@ -625,9 +637,9 @@ export default function App() {
         }
       }
 
-      if (team === 'green') {
+      if (team === 'red') {
         HEX_GRID.forEach((h, idx) => {
-          if (h.c === 0 && owners[idx] === 'green') {
+          if (h.c === 0 && owners[idx] === 'red') {
             queue.push({ r: h.r, c: h.c });
             visited.add(`${h.r},${h.c}`);
           }
@@ -639,7 +651,7 @@ export default function App() {
           
           getNeighbors(curr.r, curr.c).forEach(nb => {
             const hexIdx = HEX_GRID.findIndex(h => h.r === nb.r && h.c === nb.c);
-            if (hexIdx !== -1 && owners[hexIdx] === 'green' && !visited.has(`${nb.r},${nb.c}`)) {
+            if (hexIdx !== -1 && owners[hexIdx] === 'red' && !visited.has(`${nb.r},${nb.c}`)) {
               visited.add(`${nb.r},${nb.c}`);
               queue.push(nb);
             }
@@ -682,7 +694,6 @@ export default function App() {
   const handleLetterClick = (idx: number) => {
     playSound('click');
     
-    // AI Presenter -> Question Modal
     if (presenterType === 'ai') {
       const letter = alphabet[idx];
       const questions = QUESTION_BANK[letter] || [];
@@ -692,19 +703,26 @@ export default function App() {
       setQuestionSubIdx(subIdx);
       setShowAnswer(false);
       setShowQuestionModal(true);
-      return;
+    } else {
+      // Human Presenter -> Cycle: Select (Yellow) -> Team 1 (Red) -> Team 2 (Green) -> Reset
+      if (activeQuestionHexIdx === idx) {
+        // It's currently yellow. Move to Red.
+        setOwners(prev => ({ ...prev, [idx]: 'red' }));
+        setActiveQuestionHexIdx(null); // Clear highlight
+      } else {
+        const currentOwner = owners[idx];
+        if (currentOwner === 'red') {
+          // Red -> Green
+          setOwners(prev => ({ ...prev, [idx]: 'green' }));
+        } else if (currentOwner === 'green') {
+          // Green -> Reset
+          setOwners(prev => ({ ...prev, [idx]: null }));
+        } else {
+          // Null -> Yellow (Highlight)
+          setActiveQuestionHexIdx(idx);
+        }
+      }
     }
-
-    // Human Presenter -> Direct Cycle (Manual Control)
-    setOwners(prev => {
-      const current = prev[idx] || null;
-      let next: OwnerState = null;
-      if (current === null) next = 'transparent';
-      else if (current === 'transparent') next = 'red';
-      else if (current === 'red') next = 'green';
-      else if (current === 'green') next = null;
-      return { ...prev, [idx]: next };
-    });
   };
 
   const changeQuestion = () => {
@@ -720,6 +738,7 @@ export default function App() {
 
   const claimLetter = (owner: OwnerState) => {
     if (activeQuestionHexIdx !== null) {
+      playSound('success');
       setOwners(prev => ({ ...prev, [activeQuestionHexIdx]: owner }));
       setShowQuestionModal(false);
       setActiveQuestionHexIdx(null);
@@ -913,7 +932,7 @@ export default function App() {
               <motion.button 
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={startGame}
+              onClick={() => { playSound('success'); startGame(); }}
               className="w-full bg-white text-black py-6 rounded-[32px] text-2xl font-black flex items-center justify-center gap-4 shadow-2xl hover:shadow-white/20 transition-all mt-6"
             >
               ابدأ اللعب الآن <Play className="w-8 h-8 fill-black" />
@@ -929,25 +948,8 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen font-sans text-white p-4 md:p-8 dir-rtl overflow-hidden relative" dir="rtl" style={{ backgroundColor: teamColorGreen }}>
+    <div className="min-h-screen font-sans text-white dir-rtl overflow-hidden relative flex flex-col lg:flex-row" dir="rtl" style={{ backgroundColor: teamColorRed }}>
       
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-         <div 
-           className="absolute top-0 left-0 w-full h-full" 
-           style={{ 
-             clipPath: 'polygon(0 0, 100% 0, 50% 50%)',
-             backgroundColor: teamColorRed 
-           }} 
-         />
-         <div 
-           className="absolute bottom-0 left-0 w-full h-full" 
-           style={{ 
-             clipPath: 'polygon(0 100%, 100% 100%, 50% 50%)',
-             backgroundColor: teamColorRed
-           }} 
-         />
-      </div>
-
       <AnimatePresence>
         {isPortrait && gameState === 'playing' && (
           <motion.div 
@@ -969,75 +971,133 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <header className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between mb-8 relative z-20">
-        <div className="flex items-center gap-6">
-          <motion.div whileHover={{ rotate: 10 }} onClick={() => setGameState('menu')} className="bg-white p-4 rounded-3xl shadow-2xl cursor-pointer">
-            <Logo className="text-[#A80000] w-10 h-10" />
+      {/* Sidebar - Right Side */}
+      <aside 
+        className="relative z-30 w-full lg:w-96 lg:h-screen border-b lg:border-b-0 lg:border-l border-black/20 p-6 flex flex-col gap-6 items-center justify-start overflow-y-auto no-scrollbar shadow-[-10px_0_30px_rgba(0,0,0,0.3)] transition-colors duration-500"
+        style={{ backgroundColor: sidebarColor }}
+      >
+        <div className="flex items-center gap-4 w-full">
+          <motion.div whileHover={{ rotate: 10 }} onClick={() => setGameState('menu')} className="bg-white p-3 rounded-2xl shadow-xl cursor-pointer flex-shrink-0">
+            <Logo className="text-[#A80000] w-8 h-8" />
           </motion.div>
-          <div className="bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden">
-            <input 
-              type="text"
-              value={gameTitle}
-              onChange={(e) => setGameTitle(e.target.value)}
-              className="text-5xl font-black text-white italic tracking-tighter bg-transparent px-6 py-4 outline-none transition-all text-center w-full min-w-[300px]"
-              style={{ textShadow: `2px 2px 0 ${teamColorRed}` }}
-            />
-            <div className="flex items-center justify-center gap-2 bg-white/5 py-1">
-              {presenterType === 'ai' ? (
-                <div className="flex items-center gap-1.5 text-cyan-400">
-                  <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">مقدم آلي نشط</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 text-white/40">
-                  <Users className="w-2.5 h-2.5" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">إدارة بشرية</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-6 mt-6 md:mt-0">
-          <div className="flex items-center gap-8 bg-black/40 backdrop-blur-3xl px-10 py-5 rounded-[40px] border border-white/10 shadow-2xl relative">
-             <div className="text-center">
-               <div className="font-black text-2xl transition-all" style={{ color: teamColorRed }}>{teamRedName}</div>
-               <div className="text-white font-black text-3xl mt-1">{scores.red}</div>
-             </div>
-             <div className="h-12 w-px bg-white/10" />
-             <div className="text-center">
-               <div className="font-black text-2xl transition-all" style={{ color: teamColorGreen }}>{teamGreenName}</div>
-               <div className="text-white font-black text-3xl mt-1">{scores.green}</div>
+          <div className="flex-1 text-right">
+             <h1 className="text-2xl font-black italic tracking-tighter truncate" style={{ textShadow: `2px 2px 0 ${teamColorRed}` }}>{gameTitle}</h1>
+             <div className="flex items-center justify-end gap-1.5 mt-1">
+                <span className="text-[9px] font-black uppercase tracking-widest text-white/40">{presenterType === 'ai' ? 'مقدم آلي نشط' : 'إدارة بشرية'}</span>
+                <div className={`w-1.5 h-1.5 rounded-full ${presenterType === 'ai' ? 'bg-cyan-400 animate-pulse' : 'bg-white/20'}`} />
              </div>
           </div>
-          
-          <div className="flex gap-2">
-            <button onClick={() => setIsMuted(!isMuted)} className={`p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5 ${isMuted ? 'text-red-500' : 'text-white/60'}`}>
-              {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-            </button>
-            <button onClick={() => setShowSettings(true)} className="p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5">
-              <Settings className="w-6 h-6 text-white/60" />
-            </button>
-            <button onClick={resetGame} className="p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5">
-              <RotateCcw className="w-6 h-6 text-white/60" />
-            </button>
-          </div>
         </div>
-      </header>
 
-      <main className="relative z-10 flex flex-col items-center pb-32 w-full">
+        {/* Scores Card */}
+        <div className="w-full mt-auto mb-8 flex justify-center gap-6">
+           <div className="flex flex-col items-center gap-4">
+             <div 
+               className="text-3xl font-black truncate max-w-[150px] transition-colors duration-500 italic uppercase" 
+               dir="rtl"
+               style={{ color: teamColorGreen, textShadow: '2px 2px 0 rgba(0,0,0,0.5)' }}
+             >
+               {teamGreenName}
+             </div>
+             <div 
+               className="w-16 h-20 rounded-2xl border-4 border-black/40 flex flex-col items-center justify-center shadow-lg transform -rotate-12 transition-colors duration-500"
+               style={{ 
+                 backgroundColor: teamColorGreen,
+                 clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' 
+               }}
+             >
+                <div className="text-3xl font-black text-black/60">{scores.green}</div>
+             </div>
+           </div>
+
+           <div className="flex flex-col items-center gap-4">
+             <div 
+               className="text-3xl font-black truncate max-w-[150px] transition-colors duration-500 italic uppercase" 
+               dir="rtl"
+               style={{ color: teamColorRed, textShadow: '2px 2px 0 rgba(0,0,0,0.5)' }}
+             >
+               {teamRedName}
+             </div>
+             <div 
+               className="w-16 h-20 rounded-2xl border-4 border-black/40 flex flex-col items-center justify-center shadow-lg transform rotate-12 transition-colors duration-500"
+               style={{ 
+                 backgroundColor: teamColorRed,
+                 clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' 
+               }}
+             >
+                <div className="text-3xl font-black text-black/60">{scores.red}</div>
+             </div>
+           </div>
+        </div>
+
+        {/* Controls Container */}
+        <div className="w-full grid grid-cols-3 gap-3">
+          <button onClick={() => setIsMuted(!isMuted)} className={`flex flex-col items-center justify-center p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5 ${isMuted ? 'text-red-500' : 'text-white/60'}`}>
+            {isMuted ? <VolumeX className="w-5 h-5 mb-1" /> : <Volume2 className="w-5 h-5 mb-1" />}
+            <span className="text-[8px] font-bold">الصوت</span>
+          </button>
+          <button onClick={() => { playSound('tab'); setShowSettings(true); }} className="flex flex-col items-center justify-center p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5 text-white/60 font-medium">
+            <Settings className="w-5 h-5 mb-1" />
+            <span className="text-[8px] font-bold">الإعدادات</span>
+          </button>
+          <button onClick={() => { playSound('theme'); resetGame(); }} className="flex flex-col items-center justify-center p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5 text-white/60 font-medium">
+            <RotateCcw className="w-5 h-5 mb-1" />
+            <span className="text-[8px] font-bold">تصفير</span>
+          </button>
+        </div>
+
+        {/* Rights Section */}
+        <div className="mt-auto pt-6 text-center opacity-30">
+          <span className="text-[9px] font-bold tracking-widest italic block">جميع الحقوق محفوظة لمتجر 3KL</span>
+        </div>
+      </aside>
+
+      {/* Main Game Area */}
+      <main className="flex-1 relative flex items-center justify-center p-4 lg:p-8 z-10 transition-all duration-700 overflow-hidden">
+        {/* Background Decor - Centered to Game Area */}
+        <div className="absolute inset-0 pointer-events-none z-0" style={{ backgroundColor: teamColorRed }}>
+            {/* Diagonal Green Sections from edges */}
+            <div 
+              className="absolute top-0 right-0 w-full h-full" 
+              style={{ 
+                background: teamColorGreen,
+                clipPath: 'polygon(0% 0%, 100% 0%, 50% 50%)'
+              }} 
+            />
+            <div 
+              className="absolute bottom-0 left-0 w-full h-full" 
+              style={{ 
+                background: teamColorGreen,
+                clipPath: 'polygon(0% 100%, 100% 100%, 50% 50%)'
+              }} 
+            />
+            
+            {/* Central Overlay for depth */}
+            <div className="absolute inset-0 bg-black/5" />
+        </div>
+
         <div 
-          className="relative flex items-center justify-center transform scale-50 sm:scale-75 md:scale-90 lg:scale-100 transition-all duration-500" 
+          className="relative flex items-center justify-center scale-[0.45] sm:scale-[0.6] md:scale-[0.75] lg:scale-[0.85] xl:scale-90 transition-all duration-500 hover:scale-[0.87] lg:hover:scale-[0.92] z-10" 
           style={{ 
             width: '650px', 
             height: '500px', 
-            margin: '0 auto',
             transformOrigin: 'center center'
           }}
         >
+          {/* Edge Indicators for connectivity directions */}
+          {/* Top Edge (Green) */}
+          <div className="absolute top-[-40px] left-[50px] right-[50px] h-3 rounded-full opacity-60 blur-[2px] transition-colors duration-500" style={{ backgroundColor: teamColorGreen }} />
+          {/* Bottom Edge (Green) */}
+          <div className="absolute bottom-[-40px] left-[50px] right-[50px] h-3 rounded-full opacity-60 blur-[2px] transition-colors duration-500" style={{ backgroundColor: teamColorGreen }} />
+          {/* Left Edge (Red) */}
+          <div className="absolute left-[-40px] top-[50px] bottom-[50px] w-3 rounded-full opacity-60 blur-[2px] transition-colors duration-500" style={{ backgroundColor: teamColorRed }} />
+          {/* Right Edge (Red) */}
+          <div className="absolute right-[-40px] top-[50px] bottom-[50px] w-3 rounded-full opacity-60 blur-[2px] transition-colors duration-500" style={{ backgroundColor: teamColorRed }} />
+
           {HEX_GRID.map((hex, idx) => {
             const letter = alphabet[idx];
             const owner = owners[idx];
+            const isActive = idx === activeQuestionHexIdx;
             
             let hexBg = '#FFFFFF';
             let textColor = '#111111';
@@ -1049,9 +1109,16 @@ export default function App() {
               hexBg = teamColorGreen;
               textColor = '#FFFFFF';
             } else if (owner === 'transparent') {
-              hexBg = 'rgba(255, 255, 0, 0.4)'; 
-              textColor = '#000000';
+              hexBg = '#FFFFFF'; 
+              textColor = '#6D3691';
+            } else {
+              hexBg = '#FFFFFF';
+              textColor = '#6D3691';
             }
+
+            // Selection Highlight (Faint Yellow)
+            const finalHexBg = (isActive && !owner) ? '#fef08a' : hexBg;
+            const finalTextColor = (isActive && !owner) ? '#854d0e' : textColor;
 
             const hexW = 100;
             const hexH = 115.47;
@@ -1062,34 +1129,38 @@ export default function App() {
             return (
               <motion.div
                 key={idx}
+                animate={{ 
+                  scale: isActive ? 1.1 : 1,
+                  zIndex: isActive ? 60 : 10,
+                  boxShadow: isActive ? '0 0 30px rgba(255, 235, 59, 0.5)' : 'none'
+                }}
                 style={{ 
                   position: 'absolute',
                   top: `${top}px`,
                   left: `${left}px`,
-                  width: `${hexW + 1}px`,
-                  height: `${hexH + 1}px`,
-                  zIndex: 10,
-                  backgroundColor: owner ? 'white' : 'rgba(255,255,255,0.1)',
+                  width: `${hexW}px`,
+                  height: `${hexH}px`,
+                  backgroundColor: isActive ? '#FFD700' : sidebarColor,
                   clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
                 }}
                 whileHover={{ scale: 1.05, zIndex: 60 }}
                 whileTap={{ scale: 0.95 }}
-                className="cursor-pointer p-0.5" 
+                className="cursor-pointer p-[6px]" 
                 onClick={() => handleLetterClick(idx)}
               >
-                <div 
-                  className={`w-full h-full flex items-center justify-center transition-all duration-300 relative
-                    ${owner === 'transparent' ? 'ring-4 ring-yellow-400 z-50' : ''}
-                  `}
+                <motion.div 
+                  className="w-full h-full flex items-center justify-center relative overflow-hidden"
+                  animate={isActive ? { backgroundColor: ['#ffffff', '#fef08a', '#ffffff'] } : {}}
+                  transition={isActive ? { repeat: Infinity, duration: 1.5 } : {}}
                   style={{
-                    backgroundColor: hexBg,
+                    backgroundColor: finalHexBg,
                     clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
                   }}
                 >
-                  <span className="text-5xl font-black" style={{ color: textColor }}>
+                  <span className="text-5xl font-black drop-shadow-lg" style={{ color: finalTextColor }}>
                     {letter}
                   </span>
-                </div>
+                </motion.div>
               </motion.div>
             );
           })}
@@ -1099,11 +1170,11 @@ export default function App() {
       <AnimatePresence>
         {showSettings && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowSettings(false)} />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => { playSound('tab'); setShowSettings(false); }} />
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative bg-[#1a1a1a] w-full max-w-2xl rounded-[40px] p-10 border border-white/10 shadow-3xl text-center overflow-y-auto max-h-[90vh]">
               <div className="flex justify-between items-center mb-10">
                 <h2 className="text-3xl font-black italic">إعدادات اللعبة</h2>
-                <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-white/10 rounded-full transition-all">
+                <button onClick={() => { playSound('tab'); setShowSettings(false); }} className="p-2 hover:bg-white/10 rounded-full transition-all">
                   <X className="w-6 h-6" />
                 </button>
               </div>
@@ -1187,7 +1258,7 @@ export default function App() {
                 </div>
               </div>
 
-              <button onClick={() => setShowSettings(false)} className="mt-12 w-full py-5 bg-white text-black font-black rounded-[32px]">حفظ وإغلاق</button>
+              <button onClick={() => { playSound('success'); setShowSettings(false); }} className="mt-12 w-full py-5 bg-white text-black font-black rounded-[32px]">حفظ وإغلاق</button>
             </motion.div>
           </div>
         )}
@@ -1196,7 +1267,7 @@ export default function App() {
       <AnimatePresence>
         {showQuestionModal && activeQuestionHexIdx !== null && (
           <div className="fixed inset-0 z-[150] flex items-center justify-center p-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/95 backdrop-blur-3xl" onClick={() => setShowQuestionModal(false)} />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/95 backdrop-blur-3xl" onClick={() => { playSound('tab'); setShowQuestionModal(false); }} />
             <motion.div initial={{ scale: 0.8, y: 50, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.8, y: 50, opacity: 0 }} className="relative w-full max-w-4xl bg-white/5 border border-white/10 rounded-[64px] p-12 text-center shadow-4xl">
               <div className="flex flex-col items-center mb-12">
                 <div className="w-32 h-32 flex items-center justify-center text-8xl font-black mb-6 bg-white text-black" style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}>
@@ -1213,11 +1284,11 @@ export default function App() {
 
               <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-12">
                 {!showAnswer ? (
-                  <button onClick={() => setShowAnswer(true)} className="bg-white/10 hover:bg-white text-white hover:text-black px-12 py-6 rounded-full text-2xl font-black transition-all">إظهار الإجابة</button>
+                  <button onClick={() => { playSound('success'); setShowAnswer(true); }} className="bg-white/10 hover:bg-white text-white hover:text-black px-12 py-6 rounded-full text-2xl font-black transition-all">إظهار الإجابة</button>
                 ) : (
                   <div className="bg-yellow-500 text-black px-12 py-6 rounded-[32px] text-4xl font-black">{QUESTION_BANK[alphabet[activeQuestionHexIdx]]?.[questionSubIdx]?.a}</div>
                 )}
-                <button onClick={changeQuestion} className="bg-white/5 hover:bg-white/10 text-white/60 px-8 py-6 rounded-full text-xl font-bold flex items-center gap-2"><RefreshCw className="w-5 h-5" /> تغيير السؤال</button>
+                <button onClick={() => { playSound('click'); changeQuestion(); }} className="bg-white/5 hover:bg-white/10 text-white/60 px-8 py-6 rounded-full text-xl font-bold flex items-center gap-2"><RefreshCw className="w-5 h-5" /> تغيير السؤال</button>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-12 border-t border-white/10">
